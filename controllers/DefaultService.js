@@ -373,3 +373,155 @@ exports.uploadImage = function(args, res, next) {
   
 }
 
+
+exports.scaleImage = function(args, res, next) {
+  /**
+   * parameters expected in the args:
+  * id (Long)
+  * scale(Float)
+  **/
+  console.log("scaling image ..." + args.id.value + ", new scale :[" + args.scale.value + "]");
+        const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
+      client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
+        if(err){
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 500;
+          res.end('{"error": "cassandra cql error '+ err +'"}');
+        }else{
+          if(typeof result.rows[0] !== 'undefined' && result.rows[0] !== null){
+            console.log("pic found, name: " + result.rows[0].image_name);
+
+            jimp.read(new Buffer(result.rows[0].image, 'base64')).then(function (myImage) {
+              if(myImage === null || typeof myImage === 'undefined'){
+                  res.setHeader('Content-Type', 'application/json');
+                  res.statusCode = 500;
+                  res.end('{"error": "issue reading image in cassandra (corrupted ?)'+ err +'"}');
+                
+              }else{
+                myImage
+                    .scale(args.scale.value)// scale 
+                    .getBuffer(jimp.AUTO, (err, myBuffer) => {
+                      res.setHeader("Content-Type", jimp.AUTO);
+                      //res.write();
+                      res.end(myBuffer);});
+               }
+              })
+              .catch(function (err) {
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 500;
+                res.end('{"error": "image processing error '+ err +'"}');
+              });
+
+          }else{
+            res.setHeader('Content-Type', 'application/json');
+            res.statusCode = 404;
+            res.end('{"error": "Image not found"}');
+          }
+        }
+      });
+        
+
+}
+
+
+
+exports.rotateImage = function(args, res, next) {
+  /**
+   * parameters expected in the args:
+  * id (Long)
+  * deg(Float)
+  **/
+  console.log("rotating image ..." + args.id.value + ", rotation deg :[" + args.deg.value + "]");
+        const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
+      client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
+        if(err){
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 500;
+          res.end('{"error": "cassandra cql error '+ err +'"}');
+        }else{
+          if(typeof result.rows[0] !== 'undefined' && result.rows[0] !== null){
+            console.log("pic found, name: " + result.rows[0].image_name);
+
+            jimp.read(new Buffer(result.rows[0].image, 'base64')).then(function (myImage) {
+              if(myImage === null || typeof myImage === 'undefined'){
+                  res.setHeader('Content-Type', 'application/json');
+                  res.statusCode = 500;
+                  res.end('{"error": "issue reading image in cassandra (corrupted ?)'+ err +'"}');
+                
+              }else{
+                myImage
+                    .rotate(args.deg.value)// rotate 
+                    .getBuffer(jimp.AUTO, (err, myBuffer) => {
+                      res.setHeader("Content-Type", jimp.AUTO);
+                      //res.write();
+                      res.end(myBuffer);});
+               }
+              })
+              .catch(function (err) {
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 500;
+                res.end('{"error": "image processing error '+ err +'"}');
+              });
+
+          }else{
+            res.setHeader('Content-Type', 'application/json');
+            res.statusCode = 404;
+            res.end('{"error": "Image not found"}');
+          }
+        }
+      });
+        
+
+}
+
+
+
+exports.greyscaleImage = function(args, res, next) {
+  /**
+   * parameters expected in the args:
+  * id (Long)
+  **/
+  console.log("greyscaling image ..." + args.id.value);
+        const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
+      client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
+        if(err){
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 500;
+          res.end('{"error": "cassandra cql error '+ err +'"}');
+        }else{
+          if(typeof result.rows[0] !== 'undefined' && result.rows[0] !== null){
+            console.log("pic found, name: " + result.rows[0].image_name);
+
+            jimp.read(new Buffer(result.rows[0].image, 'base64')).then(function (myImage) {
+              if(myImage === null || typeof myImage === 'undefined'){
+                  res.setHeader('Content-Type', 'application/json');
+                  res.statusCode = 500;
+                  res.end('{"error": "issue reading image in cassandra (corrupted ?)'+ err +'"}');
+                
+              }else{
+                myImage
+                    .greyscale()
+                    .getBuffer(jimp.AUTO, (err, myBuffer) => {
+                      res.setHeader("Content-Type", jimp.AUTO);
+                      //res.write();
+                      res.end(myBuffer);});
+               }
+              })
+              .catch(function (err) {
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 500;
+                res.end('{"error": "image processing error '+ err +'"}');
+              });
+
+          }else{
+            res.setHeader('Content-Type', 'application/json');
+            res.statusCode = 404;
+            res.end('{"error": "Image not found"}');
+          }
+        }
+      });
+        
+
+}
+
+

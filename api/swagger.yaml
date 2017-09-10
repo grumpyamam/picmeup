@@ -168,7 +168,7 @@ paths:
         in: "query"
         description: "Scale factor"
         required: true
-        type: "integer"
+        type: "number"
         format: "float"
       responses:
         200:
@@ -197,7 +197,7 @@ paths:
         in: "query"
         description: "Degree of rotation"
         required: true
-        type: "integer"
+        type: "number"
         format: "float"
       responses:
         200:

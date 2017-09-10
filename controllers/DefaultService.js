@@ -1,12 +1,16 @@
 'use strict';
+
 var util = require("util");
 var jimp = require('jimp');
 var cassandra = require('cassandra-driver');
 var cassandraConf = require("../config/cassandra-local-config");
+var cacheConf = require("../config/cache-config");
 const Long = require('cassandra-driver').types.Long;
-
 var FlakeId = require('flake-idgen');
 var flakeIdGen = new FlakeId();
+var NodeCache = require( "node-cache" );
+const myCache = new NodeCache(cacheConf);
+
 
 
 const authProvider = new cassandra.auth.PlainTextAuthProvider(cassandraConf.user, cassandraConf.password);
@@ -109,7 +113,7 @@ exports.listImages = function(args, res, next) {
    * parameters expected in the args:
   **/
   
-  console.log("listing images ..." + util.inspect(args , false, null));
+  console.log("listing images ..." + "paging size : " + args.page_size.value + ", page num : " + args.page_num.value);
   
   //cassandra start
   var pageCount = 0;
@@ -213,83 +217,69 @@ exports.resizeImage = function(args, res, next) {
   * height (Long)
   **/
   console.log("resizing image ..." + args.id.value + ", new size :[" + args.width.value + "," + args.height.value + "]");
-        const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
-      client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
-        if(err){
-          res.setHeader('Content-Type', 'application/json');
-          res.statusCode = 500;
-          res.end('{"error": "cassandra cql error '+ err +'"}');
-        }else{
-          if(typeof result.rows[0] !== 'undefined' && result.rows[0] !== null){
-            console.log("pic found, name: " + result.rows[0].image_name);
-            //console.log(result.rows[0].image);
-            //console.log("this is my res : " + res[0] + res[1]);
-            
-            /*var currentImageName = result.rows[0].image_name;
+  var currentCachedVal = myCache.get(res.originalFullUrl); 
+  if(!(currentCachedVal === null || typeof currentCachedVal === 'undefined')){
+    console.log("found in cache...");
+    res.setHeader("Content-Type", currentCachedVal.format);
+    res.end(currentCachedVal.buffer);
+  }else{
+    console.log("not found in cache...");
+    const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
+      
 
-            if(currentImageName !== null){
-              var currentImageNameExtPos = currentImageName.lastIndexOf(".");
-              var currentImageNameExt = (currentImageNameExtPos < 0 ? "jpg" : currentImageName.substring(currentImageNameExtPos +1));
-              currentImageNameExt == "" ? currentImageNameExt == "jpg" : currentImageNameExt;
-            }else{
-              currentImageNameExt = "jpg";
-            }*/
-            jimp.read(new Buffer(result.rows[0].image, 'base64')).then(function (myImage) {
-              if(myImage === null || typeof myImage === 'undefined'){
-                  res.setHeader('Content-Type', 'application/json');
-                  res.statusCode = 500;
-                  res.end('{"error": "issue reading image in cassandra (corrupted ?)'+ err +'"}');
-                
-              }else{
-                myImage
-                    .resize(args.width.value, args.height.value)// resize 
-                    .getBuffer(jimp.AUTO, (err, myBuffer) => {
-                      res.setHeader("Content-Type", jimp.AUTO);
-                      //res.write();
-                      res.end(myBuffer);});
-               }
-              })
-              .catch(function (err) {
+      
+    client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
+      if(err){
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 500;
+        res.end('{"error": "cassandra cql error '+ err +'"}');
+      }else{
+        if(typeof result.rows[0] !== 'undefined' && result.rows[0] !== null){
+          console.log("pic found, name: " + result.rows[0].image_name);
+          //console.log(result.rows[0].image);
+          //console.log("this is my res : " + res[0] + res[1]);
+          
+          /*var currentImageName = result.rows[0].image_name;
+
+          if(currentImageName !== null){
+            var currentImageNameExtPos = currentImageName.lastIndexOf(".");
+            var currentImageNameExt = (currentImageNameExtPos < 0 ? "jpg" : currentImageName.substring(currentImageNameExtPos +1));
+            currentImageNameExt == "" ? currentImageNameExt == "jpg" : currentImageNameExt;
+          }else{
+            currentImageNameExt = "jpg";
+          }*/
+          
+          
+          jimp.read(new Buffer(result.rows[0].image, 'base64')).then(function (myImage) {
+            if(myImage === null || typeof myImage === 'undefined'){
                 res.setHeader('Content-Type', 'application/json');
                 res.statusCode = 500;
-                res.end('{"error": "image processing error '+ err +'"}');
-              });
+                res.end('{"error": "issue reading image in cassandra (corrupted ?)'+ err +'"}');
+              
+            }else{
+              myImage
+                  .resize(args.width.value, args.height.value)// resize 
+                  .getBuffer(jimp.AUTO, (err, myBuffer) => {
+                    myCache.set(res.originalFullUrl, {format : jimp.AUTO, buffer : myBuffer});
+                    res.setHeader("Content-Type", jimp.AUTO);
+                    res.end(myBuffer);});
+             }
+            })
+            .catch(function (err) {
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 500;
+              res.end('{"error": "image processing error '+ err +'"}');
+            });
 
-          }else{
-            res.setHeader('Content-Type', 'application/json');
-            res.statusCode = 404;
-            res.end('{"error": "Image not found"}');
-          }
+        }else{
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 404;
+          res.end('{"error": "Image not found"}');
         }
-      });
+      }
+    });
         
-         /*fs.readFile("../test.bmp", function(err, data) {
-              if (err) {
-                  res.writeHead(404);
-                  return res.end("File not found.");
-              }
-
-              res.setHeader("Content-Type","image/bmp"); //Solution!
-              res.writeHead(200);
-              res.end(data);
-          });*/
-
-/*    var examples = {};
-  examples['application/json'] = {
-  "name" : "image",
-  "width" : 640,
-  "id" : 1,
-  "url" : "http://example.com/image-640x480.png",
-  "height" : 480
-};
-  if(Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
   }
-  else {
-    res.end();
-  }
-  */
 }
 
 
@@ -381,6 +371,13 @@ exports.scaleImage = function(args, res, next) {
   * scale(Float)
   **/
   console.log("scaling image ..." + args.id.value + ", new scale :[" + args.scale.value + "]");
+  var currentCachedVal = myCache.get(res.originalFullUrl); 
+  if(!(currentCachedVal === null || typeof currentCachedVal === 'undefined')){
+    console.log("found in cache...");
+    res.setHeader("Content-Type", currentCachedVal.format);
+    res.end(currentCachedVal.buffer);
+  }else{
+    console.log("not found in cache...");
         const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
       client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
         if(err){
@@ -401,6 +398,7 @@ exports.scaleImage = function(args, res, next) {
                 myImage
                     .scale(args.scale.value)// scale 
                     .getBuffer(jimp.AUTO, (err, myBuffer) => {
+                      myCache.set(res.originalFullUrl, {format : jimp.AUTO, buffer : myBuffer});
                       res.setHeader("Content-Type", jimp.AUTO);
                       //res.write();
                       res.end(myBuffer);});
@@ -419,7 +417,7 @@ exports.scaleImage = function(args, res, next) {
           }
         }
       });
-        
+  }
 
 }
 
@@ -432,6 +430,13 @@ exports.rotateImage = function(args, res, next) {
   * deg(Float)
   **/
   console.log("rotating image ..." + args.id.value + ", rotation deg :[" + args.deg.value + "]");
+  var currentCachedVal = myCache.get(res.originalFullUrl); 
+  if(!(currentCachedVal === null || typeof currentCachedVal === 'undefined')){
+    console.log("found in cache...");
+    res.setHeader("Content-Type", currentCachedVal.format);
+    res.end(currentCachedVal.buffer);
+  }else{
+    console.log("not found in cache...");
         const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
       client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
         if(err){
@@ -452,6 +457,7 @@ exports.rotateImage = function(args, res, next) {
                 myImage
                     .rotate(args.deg.value)// rotate 
                     .getBuffer(jimp.AUTO, (err, myBuffer) => {
+                      myCache.set(res.originalFullUrl, {format : jimp.AUTO, buffer : myBuffer});
                       res.setHeader("Content-Type", jimp.AUTO);
                       //res.write();
                       res.end(myBuffer);});
@@ -470,7 +476,7 @@ exports.rotateImage = function(args, res, next) {
           }
         }
       });
-        
+  }
 
 }
 
@@ -482,6 +488,13 @@ exports.greyscaleImage = function(args, res, next) {
   * id (Long)
   **/
   console.log("greyscaling image ..." + args.id.value);
+  var currentCachedVal = myCache.get(res.originalFullUrl); 
+  if(!(currentCachedVal === null || typeof currentCachedVal === 'undefined')){
+    console.log("found in cache...");
+    res.setHeader("Content-Type", currentCachedVal.format);
+    res.end(currentCachedVal.buffer);
+  }else{
+    console.log("not found in cache...");
         const query = 'SELECT blobAsText(image_content) as image, image_name FROM image_store where image_id = ?';
       client.execute(query, [ Long.fromString(args.id.originalValue) ], {prepare:true},function (err,result){ 
         if(err){
@@ -502,6 +515,7 @@ exports.greyscaleImage = function(args, res, next) {
                 myImage
                     .greyscale()
                     .getBuffer(jimp.AUTO, (err, myBuffer) => {
+                      myCache.set(res.originalFullUrl, {format : jimp.AUTO, buffer : myBuffer});
                       res.setHeader("Content-Type", jimp.AUTO);
                       //res.write();
                       res.end(myBuffer);});
@@ -520,8 +534,7 @@ exports.greyscaleImage = function(args, res, next) {
           }
         }
       });
-        
-
+  }
 }
 
 

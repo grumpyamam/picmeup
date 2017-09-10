@@ -12,6 +12,7 @@ var cassandraConf = require("./config/cassandra-local-config");
 var nodeConf = require("./config/node-config");
 var basicAuthConf = require("./config/basic-auth-config");
 
+
 //var basicAuth = require('express-basic-auth');
 var auth = require('basic-auth');
 
@@ -53,6 +54,7 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
   app.use(function(req,res,next){
     //save url in res object for later
     res.originalHostUrl = req.protocol + "://" + req.get('host');
+    res.originalFullUrl = req.protocol + "://" + req.get('host') + req.originalUrl;
     next();
   });
 

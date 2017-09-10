@@ -66,7 +66,7 @@ exports.getImage = function(args, res, next) {
           "name" : result.rows[0].name,
           "width" : result.rows[0].width,
           "id" : result.rows[0].id,
-          "url" : "http://localhost:8080/img_store/" + result.rows[0].id,
+          "url" : res.originalHostUrl + "/img_store/" + result.rows[0].id,
           "height" : result.rows[0].height
         };
         res.end(JSON.stringify(myResponse || {}, null, 2));
@@ -128,7 +128,7 @@ exports.listImages = function(args, res, next) {
         "name" : row.name,
         "width" : row.width,
         "id" : row.id,
-        "url" : "http://localhost:8080/img_store/" + row.id,
+        "url" : res.originalHostUrl + "/img_store/" + row.id,
         "height" : row.height
       });
      }
@@ -341,7 +341,7 @@ exports.uploadImage = function(args, res, next) {
           "name" : args.fileName.value,
           "width" : imageWidth,
           "id" : generatedId,
-          "url" : "http://localhost:8080/img_store/" + generatedId,
+          "url" : res.originalHostUrl + "/img_store/" + generatedId,
           "height" : imageHeight
         };
         res.end(JSON.stringify(myResponse || {}, null, 2));

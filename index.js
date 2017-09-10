@@ -50,6 +50,12 @@ var swaggerDoc = jsyaml.safeLoad(spec);
 // Initialize the Swagger middleware
 swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
 
+  app.use(function(req,res,next){
+    //save url in res object for later
+    res.originalHostUrl = req.protocol + "://" + req.get('host');
+    next();
+  });
+
   //tarik add path to get picture
   app.use('/img_store', function (req, res, next) {
     // req.url starts with "/foo"

@@ -7,7 +7,7 @@ var http = require('http');
 var swaggerTools = require('swagger-tools');
 var jsyaml = require('js-yaml');
 var fs = require('fs');
-var cassandraConf = require("./config/cassandra-local-config");
+var cassandraConf = require("./config/cassandra-config");
 //var cassandraConf = require("./config/cassandra-config");
 var nodeConf = require("./config/node-config");
 var basicAuthConf = require("./config/basic-auth-config");
@@ -30,7 +30,11 @@ const authProvider = new cassandra.auth.PlainTextAuthProvider(cassandraConf.user
 
 //console.log(authProvider);
 
+
 var client = new cassandra.Client({ contactPoints: cassandraConf.contactPoints, keyspace: cassandraConf.keyspace, authProvider: authProvider });
+
+
+     console.log("**********" + util.inspect(cassandraConf, false, null));
 
 //tarik end
 

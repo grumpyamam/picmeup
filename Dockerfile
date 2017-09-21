@@ -1,4 +1,4 @@
-FROM node:apline
+FROM node
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -11,6 +11,5 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 8080
+EXPOSE {{port}}
 CMD [ "npm", "start" ]
-

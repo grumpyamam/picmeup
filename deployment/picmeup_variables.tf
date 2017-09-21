@@ -1,0 +1,11 @@
+variable "aws_access_key" {}
+variable "aws_secret_key" {}
+variable "aws_region" {}
+variable "aws_ami" {}
+variable "node_webapp_port" {}
+variable "cassandra_password" {}
+variable "aws_cass_ami" {}
+variable "aws_cass_instance_type" {}
+variable "aws_node_ami" {}
+variable "aws_node_instance_type" {}
+variable "private_key_path" {}

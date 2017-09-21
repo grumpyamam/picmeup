@@ -1,0 +1,16 @@
+
+
+git clone git@github.com:grumpyamam/picmeup.git
+
+zip ./*.* deployment/picmeup.zip
+
+ssh-keygen -f $HOME/.ssh/picmeup_rsa -t rsa -N ''
+
+cd deployment
+
+terraform init
+
+terraform apply
+
+
+

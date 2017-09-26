@@ -66,27 +66,47 @@ resource "aws_instance" "picmeup_node" {
   }
 
   provisioner "remote-exec" {
-    inline = ["mkdir /var/tmp/picnode"]
+    inline = ["mkdir /var/tmp/deployment",
+              "mkdir /var/tmp/deployment/node",
+              "mkdir /var/tmp/deployment/docker"]
   }
   
   provisioner "file" {
-    source      = "."
-    destination = "/var/tmp/picnode"
+    source      = "./node/"
+    destination = "/var/tmp/deployment/node"
+  }
+  
+  provisioner "file" {
+    source      = "./docker/"
+    destination = "/var/tmp/deployment/docker/"
+  }
+  
+
+  provisioner "remote-exec" {
+    inline = ["mkdir /var/tmp/node_webapp"]
+  }
+  
+  provisioner "file" {
+    source      = "../node_webapp/"
+    destination = "/var/tmp/node_webapp"
   }
 
   provisioner "file" {
-    content      = "{'port':${var.node_webapp_port}}"
-    destination = "/var/tmp/picnode/config/node-config.json"
+    content      = "{\"port\":${var.node_webapp_port}}"
+    destination = "/var/tmp/node_webapp/config/node-config.json"
 
   }
 
   provisioner "file" {
-    content      = "{'contactPoints': ['${aws_instance.picmeup_cassandra.public_ip}'],'user': 'cassandra','password':'${var.cassandra_password}','keyspace':'picmeup'}"
-    destination = "/var/tmp/picnode/config/cassandra-config.json"
+    content      = "{\"contactPoints\": [\"${aws_instance.picmeup_cassandra.public_ip}\"],\"user\": \"cassandra\",\"password\":\"${var.cassandra_password}\",\"keyspace\":\"picmeup\"}"
+    destination = "/var/tmp/node_webapp/config/cassandra-config.json"
   }
 
   provisioner "remote-exec" {
-    inline = ["sudo mv /var/tmp/picnode /usr/local/src"]
+    inline = ["sudo mkdir /usr/local/src/node_webapp",
+              "sudo mkdir /usr/local/src/deployment",
+              "sudo mv /var/tmp/node_webapp/* /usr/local/src/node_webapp",
+              "sudo mv /var/tmp/deployment/* /usr/local/src/deployment"]
   }
   
   provisioner "remote-exec" {

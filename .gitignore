@@ -1,3 +1,3 @@
-node_webapp/node_modules
-node_webapp/config
+webapp_node/node_modules
+webapp_node/config
 **/*terraform*

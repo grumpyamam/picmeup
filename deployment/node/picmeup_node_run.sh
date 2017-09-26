@@ -7,9 +7,9 @@
 
 port=$1
 
-cd /usr/local/src/
+cd /usr/local/src/node_webapp
 
-sed -i 's/{{port}}/'$port'/g' Dockerfile
+sudo sed -i 's/{{port}}/'$port'/g' Dockerfile
 
 sudo docker build -t nodewebapp .
 

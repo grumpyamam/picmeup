@@ -1,7 +1,6 @@
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
 variable "aws_region" {}
-variable "aws_ami" {}
 variable "node_webapp_port" {}
 variable "cassandra_password" {}
 variable "aws_cass_ami" {}

@@ -1,3 +1,4 @@
 node_webapp/node_modules
-node_webapp/config
+node_webapp/config/cassandra-config.json
+node_webapp/config/node-config.json
 **/*terraform*

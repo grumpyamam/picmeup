@@ -34,7 +34,7 @@ const authProvider = new cassandra.auth.PlainTextAuthProvider(cassandraConf.user
 var client = new cassandra.Client({ contactPoints: cassandraConf.contactPoints, keyspace: cassandraConf.keyspace, authProvider: authProvider });
 
 
-     console.log("**********" + util.inspect(cassandraConf, false, null));
+     //console.log("**********" + util.inspect(cassandraConf, false, null));
 
 //tarik end
 

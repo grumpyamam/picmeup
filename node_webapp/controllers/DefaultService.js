@@ -66,14 +66,22 @@ exports.getImage = function(args, res, next) {
 
         res.setHeader("Content-Type", "application/json");
         //res.write();
-        var myResponse = {
+        /*var myResponse = {
           "name" : result.rows[0].name,
           "width" : result.rows[0].width,
           "id" : result.rows[0].id,
           "url" : res.originalHostUrl + "/img_store/" + result.rows[0].id,
           "height" : result.rows[0].height
         };
-        res.end(JSON.stringify(myResponse || {}, null, 2));
+        res.end(JSON.stringify(myResponse || {}, null, 2));*/
+        var myResponse = "{\n" +
+          "  \"name\" : \"" + result.rows[0].name + "\",\n" +
+          "  \"width\" : " + result.rows[0].width + ",\n" +
+          "  \"id\" : " + result.rows[0].id + ",\n" +
+          "  \"url\" : \"" + res.originalHostUrl + "/img_store/" + result.rows[0].id + "\",\n" + 
+          "  \"height\" : " + result.rows[0].height + ",\n" +
+          "}";
+        res.end(myResponse);
         
         //next();
       }else{
@@ -128,13 +136,13 @@ exports.listImages = function(args, res, next) {
      //console.log("is it in the requested page ..." + (pageCount === args.page_num.value));
      //console.log("is it in the requested page ..." + pageCount + "," + args.page_num.value) ;
      if(pageCount === args.page_num.value){
-       listResult.push({
-        "name" : row.name,
-        "width" : row.width,
-        "id" : row.id,
-        "url" : res.originalHostUrl + "/img_store/" + row.id,
-        "height" : row.height
-      });
+       listResult.push("{\n" +
+        "  \"name\" : \"" + row.name + "\",\n" +
+        "  \"width\" : " + row.width + ",\n" +
+        "  \"id\" : " + row.id + ",\n" +
+        "  \"url\" : \"" + res.originalHostUrl + "/img_store/" + row.id + "\",\n" +
+        "  \"height\" : " + row.height + "\n" +
+      "}");
      }
   }, function (err, result) {
     if(err){
@@ -144,7 +152,8 @@ exports.listImages = function(args, res, next) {
        // Called once the page has been retrieved.
        console.log("current page count " + pageCount);
        if(pageCount === args.page_num.value){
-           res.end(JSON.stringify(listResult || {}, null, 2));
+           res.end("[" + listResult.join(",\n") + "]");
+           /*res.end(JSON.stringify(listResult || {}, null, 2));*/
        }else{
          if (result.nextPage) {
            // Retrieve the following pages:
@@ -152,8 +161,8 @@ exports.listImages = function(args, res, next) {
            pageCount++;
            result.nextPage();
          }else{
-           
-           res.end(JSON.stringify(listResult || {}, null, 2));
+           res.end("[" + listResult.join(",\n") + "]");
+           /*res.end(JSON.stringify(listResult || {}, null, 2));*/
          }
        }
     }

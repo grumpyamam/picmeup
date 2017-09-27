@@ -1,0 +1,10 @@
+aws_access_key = "{your access key here}"
+aws_secret_key = "{your secret key here}"
+aws_region = "eu-west-1"
+node_webapp_port=8080
+cassandra_password="ThisIsGoingToBeMyPassWord"
+aws_cass_ami="ami-785db401"
+aws_cass_instance_type="t2.small"
+aws_node_ami="ami-785db401"
+aws_node_instance_type="t2.micro"
+private_key_path="~/.ssh/id_picmeup"

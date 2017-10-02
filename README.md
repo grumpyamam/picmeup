@@ -35,7 +35,7 @@ You can setup here your aws_access_key, aws_secret_key.
 
 ~~~~
 $ cd picmeup/deployment
-$ picmeup_config.auto.tfvars
+$ cat picmeup_config.auto.tfvars
 aws_access_key = "{your access key here}"
 aws_secret_key = "{your secret key here}"
 aws_region = "eu-west-1"
@@ -63,3 +63,6 @@ To test it, in your browser go to:
 ***http://{your_nodejs_webapp_ip}:8080/v1/images***
 
 If the url works, the installation is successful.
+
+The doc URL :
+***http://{your_nodejs_webapp_ip}:8080/docs***

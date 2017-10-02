@@ -19,19 +19,19 @@ In order to install PICMEUP you need the following tool:
 git pull git@github.com:grumpyamam/picmeup.git picmeup
 ~~~~
 ### Generate SSH KEY
-This key will be used to allow terraform to access to your EC2 instances to do automatic deployment.
+This key will be used to allow terraform to access to your EC2 instances to do automatic deployment, also can be used for ssh access.
 Your private key must be named ~/.ssh/id_picmeup and the public one ~/.ssh/id_picmeup.pub (can be changed in picmeup_config.auto.tfvars file).
 ~~~~
 $ ssh-keygen -t rsa -b 4096 -C "your_email_address@company.com" -N "" -f ~/.ssh/id_picmeup
 ~~~~
 ### Configuration Setup
-Go inside the project, and update the configuration file **picmeup_config.auto.tfvars** located in **deployment** folder.
-You can setup here your aws_access_key, aws_secret_key.
+Go inside the project, and update the configuration file **picmeup_config.auto.tfvars** located in **deployment** folder. This file has all configurable parameters:
+* You can setup here your aws_access_key, aws_secret_key.
 * Your aws user needs access to create EC2 instances + EC2 Key Pairs.
 * The ami images must be Ubuntu based.
-* You Webapp port can be setup: aws_webapp_port.
+* Your Webapp port can be setup: *node_webapp_port*.
 * The Cassandra DB password can be setup:
- cassandra_password. The Cassandra username and port are the default ones: **cassandra** and **9042** respectively.
+ *cassandra_password*. The Cassandra username and port are the default ones: **cassandra** and **9042** respectively.
 
 ~~~~
 $ cd picmeup/deployment

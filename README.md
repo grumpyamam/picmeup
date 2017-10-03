@@ -4,8 +4,8 @@ This Project exposes a restful API to create/delete/display and process Images.
 The deployment is on Docker
 
   1. **Webapp**: *NodeJs*
-  2. **Database**: *Cassandra*
-  3. **Deployment**: *Amazon AWS*, 2 EC2 instances, one for the database, one for the WebApp.
+  2. **Database**: *Cassandra*.
+  3. **Deployment**: *Amazon AWS* - 2 EC2 instances, one for the WebApp, one for the Database.
 
 ## Installation
 ### Requirements
@@ -25,8 +25,8 @@ Your private key must be named ~/.ssh/id_picmeup and the public one ~/.ssh/id_pi
 $ ssh-keygen -t rsa -b 4096 -C "your_email_address@company.com" -N "" -f ~/.ssh/id_picmeup
 ~~~~
 ### Configuration Setup
-Go inside the project, and update the configuration file **picmeup_config.auto.tfvars** located in **deployment** folder. This file has all configurable parameters:
-* You can setup here your aws_access_key, aws_secret_key.
+* Main config file : **picmeup_config.auto.tfvars** located in *deployment/* folder:
+* You can setup in **picmeup_config.auto.tfvars** your aws_access_key, aws_secret_key.
 * Your aws user needs access to create EC2 instances + EC2 Key Pairs.
 * The ami images must be Ubuntu based.
 * Your Webapp port can be setup: *node_webapp_port*.
@@ -47,6 +47,9 @@ aws_node_ami="ami-785db401"
 aws_node_instance_type="t2.micro"
 private_key_path="~/.ssh/id_picmeup"
 ~~~~
+
+* **Caching**: Use of *node-cache* npm package - Setup of stdTTL and checkPeriod can be change in *node_webapp/config/cache-config.json* file.
+* **Authentication**: *basic-auth* - Allowed users are setup in *node_webapp/config/basic-auth-config.json* file.
 
 ### Deployment Run
 
